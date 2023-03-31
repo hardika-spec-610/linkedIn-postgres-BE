@@ -4,6 +4,7 @@ import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 import PostsModel from "../posts/model.js";
+import ExperiencesModel from "../experinces/model.js";
 
 const usersRouter = Express.Router();
 
@@ -19,7 +20,10 @@ usersRouter.post("/", async (req, res, next) => {
 usersRouter.get("/", async (req, res, next) => {
   try {
     const users = await UsersModel.findAll({
-      include: [{ model: PostsModel, attributes: ["postId", "text", "image"] }],
+      include: [
+        { model: PostsModel, attributes: ["postId", "text", "image"] },
+        { model: ExperiencesModel, attributes: { exclude: ["userId"] } },
+      ],
     });
     res.send(users);
   } catch (error) {

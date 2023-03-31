@@ -1,6 +1,7 @@
 import sequelize from "../db.js";
 import { DataTypes } from "sequelize";
 import PostsModel from "../posts/model.js";
+import ExperiencesModel from "../experinces/model.js";
 
 const UsersModel = sequelize.define("user", {
   userId: {
@@ -9,15 +10,15 @@ const UsersModel = sequelize.define("user", {
     defaultValue: DataTypes.UUIDV4,
   },
   name: {
-    type: DataTypes.TEXT(20),
+    type: DataTypes.STRING(20),
     allowNull: false,
   },
   surname: {
-    type: DataTypes.TEXT(20),
+    type: DataTypes.STRING(20),
     allowNull: false,
   },
   email: {
-    type: DataTypes.TEXT(70),
+    type: DataTypes.STRING(70),
     allowNull: false,
     unique: true,
   },
@@ -34,11 +35,11 @@ const UsersModel = sequelize.define("user", {
   }, //The address attribute is defined as a JSONB column, which allows us to store an object as a JSON string in the database.
   //We also define get and set methods to automatically parse and stringify the JSON object when reading from or writing to the database.
   phoneNumber: {
-    type: DataTypes.TEXT(22),
+    type: DataTypes.STRING(22),
     allowNull: false,
   },
   website: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: true,
   },
   bio: {
@@ -46,17 +47,25 @@ const UsersModel = sequelize.define("user", {
     allowNull: false,
   },
   title: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   area: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   image: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: true,
   },
+});
+
+UsersModel.hasMany(ExperiencesModel, {
+  foreignKey: { name: "userId", allowNull: false },
+  onDelete: "CASCADE",
+});
+ExperiencesModel.belongsTo(UsersModel, {
+  foreignKey: { name: "userId", allowNull: false },
 });
 
 UsersModel.hasMany(PostsModel, {
