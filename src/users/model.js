@@ -1,5 +1,6 @@
 import sequelize from "../db.js";
 import { DataTypes } from "sequelize";
+import PostsModel from "../posts/model.js";
 
 const UsersModel = sequelize.define("user", {
   userId: {
@@ -42,19 +43,31 @@ const UsersModel = sequelize.define("user", {
   },
   bio: {
     type: DataTypes.TEXT,
-    allowNull: true,
+    allowNull: false,
   },
   title: {
     type: DataTypes.TEXT,
-    allowNull: true,
+    allowNull: false,
   },
   area: {
     type: DataTypes.TEXT,
-    allowNull: true,
+    allowNull: false,
   },
   image: {
     type: DataTypes.TEXT,
     allowNull: true,
   },
 });
+
+UsersModel.hasMany(PostsModel, {
+  foreignKey: { name: "userId", allowNull: false },
+  onDelete: "CASCADE",
+});
+PostsModel.belongsTo(UsersModel, {
+  foreignKey: { name: "userId", allowNull: false },
+});
+
+//where a user can have multiple posts, and each post belongs to a single user.
+//We're also specifying that when a user is deleted, all their related posts should be deleted automatically using onDelete: "CASCADE".
+//This means that if we delete a user record, all their related posts will also be deleted automatically, without needing to delete them explicitly.
 export default UsersModel;

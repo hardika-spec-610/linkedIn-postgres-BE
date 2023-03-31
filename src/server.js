@@ -8,6 +8,7 @@ import {
   notFoundErrorHandler,
 } from "./errorHandlers.js";
 import usersRouter from "./users/index.js";
+import postsRouter from "./posts/index.js";
 
 const server = Express();
 const port = process.env.PORT || 3001;
@@ -18,6 +19,7 @@ server.use(Express.json());
 
 // ****************************** ENDPOINTS *******************************
 server.use("/users", usersRouter);
+server.use("/posts", postsRouter);
 // *************************** ERROR HANDLERS *****************************
 server.use(badRequestErrorHandler);
 server.use(notFoundErrorHandler);
