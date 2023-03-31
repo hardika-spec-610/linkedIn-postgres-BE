@@ -1,6 +1,9 @@
 import Express from "express";
 import PostsModel from "./model.js";
 import UsersModel from "../users/model.js";
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 const postsRouter = Express.Router();
 
@@ -81,5 +84,40 @@ postsRouter.delete("/:postId", async (req, res, next) => {
     next(error);
   }
 });
+const cloudinaryPostUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "LinkedIn post/posts",
+    },
+  }),
+}).single("image");
+
+postsRouter.post(
+  "/:postId/image",
+  cloudinaryPostUploader,
+  async (req, res, next) => {
+    try {
+      const { postId } = req.params;
+      const post = await PostsModel.findByPk(postId);
+
+      if (!post) {
+        return res.status(404).json({ message: "post not found" });
+      }
+
+      const result = await cloudinary.uploader.upload(req.file.path);
+      console.log("resultPost", result);
+      post.image = result.secure_url;
+      console.log("secure_url_post", result.secure_url);
+      await post.save();
+
+      return res
+        .status(200)
+        .json({ message: "Post image updated successfully", post });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
 
 export default postsRouter;
