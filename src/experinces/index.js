@@ -2,6 +2,9 @@ import Express from "express";
 import ExperiencesModel from "./model.js";
 import createHttpError from "http-errors";
 import UsersModel from "../users/model.js";
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 const experiencesRouter = Express.Router();
 
@@ -90,6 +93,40 @@ experiencesRouter.delete(
       }
     } catch (error) {
       next(error);
+    }
+  }
+);
+
+const cloudinaryExpUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "LinkedIn-BE-Users",
+    },
+  }),
+}).single("image");
+
+experiencesRouter.post(
+  "/:userId/experiences/:expId/image",
+  cloudinaryExpUploader,
+  async (req, res, next) => {
+    try {
+      const { expId } = req.params;
+      const exp = await ExperiencesModel.findByPk(expId);
+
+      if (!exp) {
+        return res.status(404).json({ message: "Experience not found" });
+      }
+
+      const result = await cloudinary.uploader.upload(req.file.path);
+      console.log("resultExp", result);
+      exp.image = result.secure_url;
+      console.log("secure_url_Exp", result.secure_url);
+      await exp.save();
+
+      res.send(exp);
+    } catch (error) {
+      return next(error);
     }
   }
 );

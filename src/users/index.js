@@ -107,9 +107,10 @@ usersRouter.post(
       console.log("secure_url", result.secure_url);
       await user.save();
 
-      return res
-        .status(200)
-        .json({ message: "User image updated successfully", user });
+      //   return res
+      //     .status(200)
+      //     .json({ message: "User image updated successfully", user });
+      res.send(user);
     } catch (error) {
       return next(error);
     }

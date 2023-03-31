@@ -111,9 +111,10 @@ postsRouter.post(
       console.log("secure_url_post", result.secure_url);
       await post.save();
 
-      return res
-        .status(200)
-        .json({ message: "Post image updated successfully", post });
+      //   return res
+      //     .status(200)
+      //     .json({ message: "Post image updated successfully", post });
+      res.send(post);
     } catch (error) {
       return next(error);
     }
