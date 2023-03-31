@@ -5,3 +5,4 @@ PG_PASSWORD=
 PG_HOST=localhost
 PG_PORT=
 CLOUDINARY_URL=
+BE_URL=http://localhost:3001

@@ -5,6 +5,7 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 import PostsModel from "../posts/model.js";
 import ExperiencesModel from "../experinces/model.js";
+import q2s from "query-to-sequelize";
 
 const usersRouter = Express.Router();
 
@@ -17,20 +18,79 @@ usersRouter.post("/", async (req, res, next) => {
   }
 });
 
+// usersRouter.get("/", async (req, res, next) => {
+//   try {
+//     const query = {};
+//     const { count, rows } = await UsersModel.findAndCountAll({
+//       where: {
+//         ...query,
+//         ...(req.query.search
+//           ? { name: { [Op.iLike]: `%${req.query.search}%` } }
+//           : ""),
+//       },
+//       order: [
+//         req.query.columnToSort && req.query.sortDirection
+//           ? [req.query.columnToSort, req.query.sortDirection]
+//           : ["name", "ASC"],
+//       ],
+//       offset: req.query.offset,
+//       limit: req.query.limit,
+//       distinct: true,
+//       include: [
+//         { model: PostsModel, attributes: ["postId", "text", "image"] },
+//         { model: ExperiencesModel, attributes: { exclude: ["userId"] } },
+//       ],
+//     });
+
+//     const prevOffset = parseInt(req.query.offset) - parseInt(req.query.limit);
+//     const nextOffset = parseInt(req.query.offset) + parseInt(req.query.limit);
+
+//     res.send({
+//       total: count,
+//       pages: Math.ceil(count / req.query.limit),
+//       links: {
+//         prevLink:
+//           prevOffset >= 0
+//             ? `${process.env.BE_URL}/users?limit=${req.query.limit}&offset=${prevOffset}`
+//             : null,
+//         nextLink:
+//           nextOffset <= count
+//             ? `${process.env.BE_URL}/users?limit=${req.query.limit}&offset=${nextOffset}`
+//             : null,
+//       },
+//       users: rows,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 usersRouter.get("/", async (req, res, next) => {
   try {
-    const users = await UsersModel.findAll({
+    const sequelizeQuery = q2s(req.query);
+    console.log("sequelizeQuery", sequelizeQuery);
+    const { count, rows } = await UsersModel.findAndCountAll({
+      offset: sequelizeQuery.options.offset,
+      limit: sequelizeQuery.options.limit,
+      sort: sequelizeQuery.options.sort,
+      distinct: true,
+      // When distinct:true is used in a query, Sequelize will add the DISTINCT keyword to the SQL statement generated,
+      // which tells the database to return only the unique values for the specified field.
       include: [
         { model: PostsModel, attributes: ["postId", "text", "image"] },
         { model: ExperiencesModel, attributes: { exclude: ["userId"] } },
       ],
     });
-    res.send(users);
+
+    res.send({
+      links: sequelizeQuery.links(process.env.BE_URL + "/users", count),
+      count,
+      numberOfPages: Math.ceil(count / sequelizeQuery.options.limit),
+      users: rows,
+    });
   } catch (error) {
     next(error);
   }
 });
-
 usersRouter.get("/:userId", async (req, res, next) => {
   try {
     const user = await UsersModel.findByPk(req.params.userId);
